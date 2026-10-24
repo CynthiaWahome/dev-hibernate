@@ -9,4 +9,4 @@ dist/
 !/.env.example
 .venv/
 __pycache__/
-*.pyc
+*.pyc*.sqlite-*
