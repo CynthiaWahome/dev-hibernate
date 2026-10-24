@@ -1,0 +1,33 @@
+{
+  "name": "dev-hibernate",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev:server & npm run dev:ui",
+    "dev:server": "cd apps/server && npm run dev",
+    "dev:ui": "cd apps/ui && npm run dev",
+    "build": "npm run build:ui && npm run build:server",
+    "build:ui": "cd apps/ui && npm run build",
+    "build:server": "cd apps/server && npm run build",
+    "start": "cd apps/server && npm start",
+    "lint": "npm run lint:ui && npm run lint:server",
+    "lint:ui": "cd apps/ui && npm run lint",
+    "lint:server": "cd apps/server && npm run lint",
+    "typecheck": "npm run typecheck:ui && npm run typecheck:server",
+    "typecheck:ui": "cd apps/ui && npm run typecheck",
+    "typecheck:server": "cd apps/server && npm run typecheck",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "cd packages/core && npm run test",
+    "test:integration": "cd apps/server && npm run test",
+    "test:e2e": "cd apps/ui && npm run test:e2e"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "vitest": "^3.0.0"
+  }
+}
