@@ -1,15 +1,88 @@
 import express from 'express';
+import helmet from 'helmet';
 import cors from 'cors';
+import { randomBytes } from 'node:crypto';
+import { getDb } from './db.js';
 import { healthRouter } from './routes/health.js';
 
-const app = express();
 const PORT = process.env.PORT || 4317;
+const TOKEN = randomBytes(32).toString('hex');
 
-app.use(cors({ origin: 'http://127.0.0.1:5173' }));
+const app = express();
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  noSniff: true,
+  frameguard: { action: 'deny' },
+}));
+
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGIN || 'http://127.0.0.1:5173',
+  methods: ['GET', 'POST', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'X-App-Token'],
+}));
+
 app.use(express.json({ limit: '1mb' }));
 
 app.use('/api', healthRouter);
 
+// Token bootstrap endpoint - returns token to client
+app.get('/api/bootstrap', (req, res) => {
+  res.json({ token: TOKEN });
+});
+
+// Protected routes
+app.use('/api', (req, res, next) => {
+  // Skip health and bootstrap
+  if (req.path === '/health' || req.path === '/bootstrap') {
+    return next();
+  }
+
+  const token = req.headers['x-app-token'];
+  if (!token || token !== TOKEN) {
+    res.status(401).json({ error: 'unauthorized' });
+    return;
+  }
+
+  // Validate Origin/Host on mutations
+  if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) {
+    const origin = req.headers['origin'];
+    const host = req.headers['host'];
+    const allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://127.0.0.1:5173';
+    const allowedHost = process.env.ALLOWED_HOST || '127.0.0.1:5173';
+
+    if (origin && origin !== allowedOrigin) {
+      res.status(403).json({ error: 'origin_not_allowed' });
+      return;
+    }
+    if (host && host !== allowedHost) {
+      res.status(403).json({ error: 'host_not_allowed' });
+      return;
+    }
+  }
+
+  next();
+});
+
+// Initialize DB lazily
+getDb();
+
+app.get('/', (_req, res) => {
+  res.redirect('/api/health');
+});
+
 app.listen(PORT, '127.0.0.1', () => {
   console.log(`DevHibernate server running at http://127.0.0.1:${PORT}`);
+  console.log(`Bootstrap token available at /api/bootstrap`);
 });
