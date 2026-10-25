@@ -32,11 +32,12 @@ Root → Project → Scan → Candidate → Plan → Operation → Resume Record
 ## Quick Start
 
 ```bash
+cp .env.example .env
 npm install
 npm run dev
 ```
 
-Open http://127.0.0.1:5173 — the server runs at http://127.0.0.1:4317.
+Open http://localhost:5173 — the server runs at http://127.0.0.1:4317.
 
 ## Scripts
 
@@ -57,3 +58,7 @@ Open http://127.0.0.1:5173 — the server runs at http://127.0.0.1:4317.
 - **State:** SQLite via better-sqlite3
 - **Validation:** Zod
 - **AI:** Ollama (gemma3:1b), local only
+
+## License
+
+2026 — All rights reserved. wamzii.com
