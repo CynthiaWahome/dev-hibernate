@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { getDb } from '../db.js';
 import { existsSync, realpathSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { resolve, normalize } from 'node:path';
+import { resolve, normalize, join } from 'node:path';
 
 export const rootsRouter = Router();
 
@@ -35,7 +35,12 @@ rootsRouter.post('/', (req, res) => {
     return;
   }
 
-  const normalized = normalize(path);
+  // Accept a leading ~ and tolerate pasted whitespace before validating.
+  let input = path.trim();
+  if (input === '~') input = homedir();
+  else if (input.startsWith('~/')) input = join(homedir(), input.slice(2));
+
+  const normalized = normalize(input);
   if (!existsSync(normalized) || !statSync(normalized).isDirectory()) {
     res.status(400).json({ error: 'invalid_path' });
     return;

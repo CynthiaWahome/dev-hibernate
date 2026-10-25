@@ -49,10 +49,22 @@ app.use(cors({
 
 app.use(express.json({ limit: '1mb' }));
 
+// Request logging (method, path, status, duration) for local debugging
+app.use('/api', (req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    console.log(`[api] ${req.method} ${req.originalUrl} → ${res.statusCode} (${Date.now() - start}ms)`);
+  });
+  next();
+});
+
 app.use('/api', healthRouter);
 
 // Token bootstrap endpoint - returns token to client
 app.get('/api/bootstrap', (req, res) => {
+  // Never cache the token — a stale cached token causes 401s on mutations
+  // after the server restarts and issues a new token.
+  res.set('Cache-Control', 'no-store');
   res.json({ token: TOKEN });
 });
 
@@ -69,14 +81,25 @@ app.use('/api', (req, res, next) => {
     return;
   }
 
-  // Validate Origin/Host on mutations
+  // Validate Origin on mutations. This is a loopback-only desktop app, so any
+  // loopback origin (localhost or 127.0.0.1, whatever dev port Vite picks) is
+  // allowed; everything else is rejected. Not a wildcard — still loopback-only.
   if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) {
     const origin = req.headers['origin'];
-    const allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://127.0.0.1:5173';
-
-    if (origin && origin !== allowedOrigin) {
-      res.status(403).json({ error: 'origin_not_allowed' });
-      return;
+    if (origin) {
+      let ok = false;
+      try {
+        const host = new URL(origin).hostname;
+        ok = host === 'localhost' || host === '127.0.0.1';
+      } catch {
+        ok = false;
+      }
+      if (!ok && origin === process.env.ALLOWED_ORIGIN) ok = true;
+      if (!ok) {
+        console.warn(`[api] blocked non-loopback origin: ${origin}`);
+        res.status(403).json({ error: 'origin_not_allowed' });
+        return;
+      }
     }
   }
 
