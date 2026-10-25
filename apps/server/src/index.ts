@@ -4,6 +4,9 @@ import cors from 'cors';
 import { randomBytes } from 'node:crypto';
 import { getDb } from './db.js';
 import { healthRouter } from './routes/health.js';
+import { rootsRouter } from './routes/roots.js';
+import { scansRouter } from './routes/scans.js';
+import { projectsRouter } from './routes/projects.js';
 
 const PORT = process.env.PORT || 4317;
 const TOKEN = randomBytes(32).toString('hex');
@@ -58,22 +61,20 @@ app.use('/api', (req, res, next) => {
   // Validate Origin/Host on mutations
   if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) {
     const origin = req.headers['origin'];
-    const host = req.headers['host'];
     const allowedOrigin = process.env.ALLOWED_ORIGIN || 'http://127.0.0.1:5173';
-    const allowedHost = process.env.ALLOWED_HOST || '127.0.0.1:5173';
 
     if (origin && origin !== allowedOrigin) {
       res.status(403).json({ error: 'origin_not_allowed' });
-      return;
-    }
-    if (host && host !== allowedHost) {
-      res.status(403).json({ error: 'host_not_allowed' });
       return;
     }
   }
 
   next();
 });
+
+app.use('/api/roots', rootsRouter);
+app.use('/api/scans', scansRouter);
+app.use('/api/projects', projectsRouter);
 
 // Initialize DB lazily
 getDb();
