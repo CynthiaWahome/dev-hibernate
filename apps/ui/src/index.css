@@ -103,8 +103,8 @@ button { font-family: inherit; cursor: pointer; }
 .header .sub { font-size: 13px; color: var(--text-muted); }
 .header-right {
   margin-left: auto;
-  flex: 1 1 340px;
-  max-width: 560px;
+  flex: 1 1 520px;
+  max-width: 960px;
   display: flex;
   flex-direction: column;
   gap: var(--s2);
@@ -122,6 +122,10 @@ button { font-family: inherit; cursor: pointer; }
   line-height: 1.4;
 }
 .privacy-note code { background: var(--surface-2); padding: 0 3px; border-radius: 4px; }
+/* keep the privacy reminder on one line where there's room */
+@media (min-width: 1000px) {
+  .privacy-note { white-space: nowrap; }
+}
 @media (max-width: 760px) {
   .header-right { margin-left: 0; flex-basis: 100%; max-width: none; }
 }

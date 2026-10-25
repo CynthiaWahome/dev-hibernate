@@ -90,7 +90,7 @@ export default function App() {
   async function registerRoot(e: React.FormEvent) {
     e.preventDefault();
     const path = rootPath.trim();
-    if (!path) return;
+    if (!path) { setError('Enter a folder path to register.'); return; }
     setRegistering(true);
     setError(null);
     try {
@@ -160,7 +160,7 @@ export default function App() {
               autoComplete="off"
               spellCheck={false}
             />
-            <button className="btn btn-primary" type="submit" disabled={registering || !rootPath.trim()}>
+            <button className="btn btn-primary" type="submit" disabled={registering}>
               {registering ? 'Scanning…' : 'Register & scan'}
             </button>
           </form>
