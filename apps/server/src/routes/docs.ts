@@ -38,6 +38,17 @@ const customHtml = `<!DOCTYPE html>
 
 docsRouter.get('/docs/json', (_req, res) => res.json(openApiSpec));
 docsRouter.get('/docs', (_req, res) => {
+  // Swagger UI is loaded from unpkg with an inline init script, so relax the
+  // strict global CSP for this one HTML route (the rest of the app stays strict).
+  res.set(
+    'Content-Security-Policy',
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' https://unpkg.com; " +
+    "style-src 'self' 'unsafe-inline' https://unpkg.com; " +
+    "img-src 'self' data: https://unpkg.com; " +
+    "font-src 'self' https://unpkg.com; " +
+    "connect-src 'self'"
+  );
   res.set('Content-Type', 'text/html');
   res.send(customHtml);
 });
