@@ -47,6 +47,14 @@ rootsRouter.post('/', (req, res) => {
   }
 
   const db = getDb();
+
+  // Return existing root if path already registered
+  const existing = db.prepare('SELECT * FROM roots WHERE canonical_path = ?').get(normalized) as any;
+  if (existing) {
+    res.json(existing);
+    return;
+  }
+
   const id = uuid();
   db.prepare('INSERT INTO roots (id, canonical_path) VALUES (?, ?)').run(id, normalized);
   res.json({ id, canonical_path: normalized });

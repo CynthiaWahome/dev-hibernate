@@ -23,6 +23,8 @@ interface Project {
   status: string;
   pinned: number;
   user_shelved: number;
+  root_id: string;
+  relative_location: string;
 }
 
 export default function App() {
@@ -80,8 +82,14 @@ export default function App() {
               {projects.map(p => (
                 <div key={p.id} className="project-card">
                   <div className="info">
-                    <h3>{p.ecosystem} project</h3>
-                    <div className="meta">
+                    <h3>{p.relative_location === '.' ? 'Project root' : p.relative_location}</h3>
+                    <div className="meta" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      {p.ecosystem} ecosystem
+                    </div>
+                    <div className="meta" style={{ fontSize: '12px', color: 'var(--text-muted)', wordBreak: 'break-all' }}>
+                      {p.root_id ? `root: ${p.root_id.slice(0, 8)}...` : ''}
+                    </div>
+                    <div className="meta" style={{ marginTop: '4px' }}>
                       <span className={`badge badge-${p.status}`}>{p.status}</span>
                       {p.pinned && <span className="badge badge-active">pinned</span>}
                       {p.user_shelved && <span className="badge badge-shelved">shelved</span>}
@@ -91,12 +99,14 @@ export default function App() {
                     <button
                       className={`btn ${p.user_shelved ? 'btn-ghost' : 'btn-primary'}`}
                       onClick={() => toggleShelve(p)}
+                      title={p.user_shelved ? 'Unshelve — remove from hibernation queue' : 'Shelve — mark ready to hibernate'}
                     >
                       {p.user_shelved ? 'Unshelve' : 'Shelve'}
                     </button>
                     <button
                       className={`btn ${p.pinned ? 'btn-danger' : 'btn-ghost'}`}
                       onClick={() => togglePin(p)}
+                      title={p.pinned ? 'Unpin — allow hibernation' : 'Pin — protect from hibernation'}
                     >
                       {p.pinned ? 'Unpin' : 'Pin'}
                     </button>
