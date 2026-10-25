@@ -2,8 +2,6 @@
   <img src="docs/assets/readme-banner.png" alt="DevHibernate" width="100%">
 </p>
 
-<p align="center"><strong>Let your projects rest.</strong></p>
-
 <p align="center">
   A <strong>local, open-weight AI</strong> clears the dependency clutter from shelved dev projects.<br>
   No cloud, no API keys, your code never leaves your machine.
@@ -31,9 +29,10 @@ Each one, however, invited an entire `node_modules` to move in — rent-free, in
 
 Point it at a folder. It takes a look, drafts a plan, you say yes, it tidies up, and it leaves you a note on how to wake the project later.
 
-```
-Register a folder  →  Scan (filenames + sizes only)  →  Local AI drafts a plan
-     →  You review  →  Approved cleanup runs  →  Resume guide for later
+```mermaid
+flowchart LR
+    A["Register a folder"] --> B["Scan<br/>filenames + sizes only"] --> C["Local AI<br/>drafts a plan"]
+    C --> D["You review"] --> E["Approved<br/>cleanup runs"] --> F["Resume guide<br/>for later"]
 ```
 
 ## The AI runs on *your* machine — that's the whole point
@@ -46,6 +45,8 @@ Cleaning up your projects means letting something look at them, and your project
 - 🔍 **Nothing to trust blindly.** It's open — inspect it, fork it, run it offline forever.
 
 The privacy promise isn't a reassuring banner; there's simply no server to send anything to. [Here's exactly how it holds](docs/TECHNICAL.md#privacy-contract).
+
+---
 
 ## Quick start
 

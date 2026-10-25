@@ -18,6 +18,8 @@ interface Blocker {
 
 export async function inventoryCandidate(projectId: string, candidatePath: string): Promise<string[]> {
   const db = getDb();
+  // Re-inventory replaces prior candidates for this project (no double-counting).
+  db.prepare('DELETE FROM candidates WHERE project_id = ?').run(projectId);
   const blockers: Blocker[] = [];
   const candidateId = uuid();
 
