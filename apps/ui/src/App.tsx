@@ -71,7 +71,6 @@ export default function App() {
       </footer>
     </div>
   );
-  }
 
   return (
     <div className="app">
@@ -93,19 +92,17 @@ export default function App() {
               {projects.map(p => (
                 <div key={p.id} className="project-card">
                   <div className="info">
-                    <h3>{p.relative_location === '.' ? 'Project root' : p.relative_location}</h3>
-                    <div className="meta">
+                    <h3>
+                      <span aria-hidden="true" style={{ marginRight: '8px' }}>📦</span>
+                      {p.relative_location === '.' ? 'Project root' : p.relative_location}
+                    </h3>
+                    <div className="meta" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <span className={`badge badge-${p.status}`}>{p.status}</span>
+                      {p.pinned ? <span className="badge badge-active">pinned</span> : null}
+                      {p.user_shelved ? <span className="badge badge-shelved">shelved</span> : null}
                       <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                        {p.ecosystem} ecosystem
+                        {p.ecosystem.charAt(0).toUpperCase() + p.ecosystem.slice(1)}
                       </span>
-                    </div>
-                    <div className="meta" style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                      Root: {p.root_id.slice(0, 8)}...
-                    </div>
-                    <div className="meta" style={{ marginTop: '4px' }}>
-                      {p.pinned && <span className="badge badge-active">pinned</span>}
-                      {p.user_shelved && <span className="badge badge-shelved">shelved</span>}
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
