@@ -81,6 +81,9 @@ app.use('/api/projects', projectsRouter);
 app.use('/api/candidates', candidatesRouter);
 app.use('/api/plans', plansRouter);
 
+// Docs (public)
+app.use(docsRouter);
+
 // Initialize DB lazily
 getDb();
 
