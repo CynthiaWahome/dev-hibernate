@@ -2,14 +2,14 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import { randomBytes } from 'node:crypto';
-import { getDb } from './db.ts';
-import { healthRouter } from './routes/health.ts';
-import { rootsRouter } from './routes/roots.ts';
-import { scansRouter } from './routes/scans.ts';
-import { candidatesRouter } from './routes/candidates.ts';
-import { plansRouter } from './routes/plans.ts';
-import { projectsRouter } from './routes/projects.ts';
-import { docsRouter } from './routes/docs.ts';
+import { getDb } from './db.js';
+import { healthRouter } from './routes/health.js';
+import { rootsRouter } from './routes/roots.js';
+import { scansRouter } from './routes/scans.js';
+import { candidatesRouter } from './routes/candidates.js';
+import { plansRouter } from './routes/plans.js';
+import { projectsRouter } from './routes/projects.js';
+import { docsRouter } from './routes/docs.js';
 
 const PORT = Number(process.env.PORT || 4317);
 const TOKEN = randomBytes(32).toString('hex');
@@ -17,7 +17,18 @@ const TOKEN = randomBytes(32).toString('hex');
 const app = express();
 
 app.use(helmet({
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      frameSrc: ["'none'"],
+    },
+  },
   noSniff: true,
   frameguard: { action: 'deny' },
 }));
