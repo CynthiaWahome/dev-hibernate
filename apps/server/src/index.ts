@@ -11,6 +11,7 @@ import { plansRouter } from './routes/plans.js';
 import { projectsRouter } from './routes/projects.js';
 import { docsRouter } from './routes/docs.js';
 import { operationsRouter } from './routes/operations.js';
+import { resumeRouter } from './routes/resume.js';
 
 const PORT = Number(process.env.PORT || 4317);
 const TOKEN = randomBytes(32).toString('hex');
@@ -88,6 +89,7 @@ app.use('/api/projects', projectsRouter);
 app.use('/api/candidates', candidatesRouter);
 app.use('/api/plans', plansRouter);
 app.use('/api/operations', operationsRouter);
+app.use('/api/resume', resumeRouter);
 
 // Docs (public)
 app.use(docsRouter);
