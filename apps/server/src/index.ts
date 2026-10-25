@@ -17,18 +17,7 @@ const TOKEN = randomBytes(32).toString('hex');
 const app = express();
 
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:"],
-      connectSrc: ["'self'"],
-      fontSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      frameSrc: ["'none'"],
-    },
-  },
+  contentSecurityPolicy: false,
   noSniff: true,
   frameguard: { action: 'deny' },
 }));
