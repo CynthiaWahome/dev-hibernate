@@ -1,15 +1,12 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-horizontal-dark.svg">
-    <img src="docs/assets/logo-horizontal-light.svg" alt="DevHibernate" width="340">
-  </picture>
+  <img src="docs/assets/readme-banner.png" alt="DevHibernate" width="100%">
 </p>
 
 <p align="center"><strong>Let your projects rest.</strong></p>
 
 <p align="center">
-  A <strong>local, open-weight AI</strong> clears the dependency clutter from shelved dev projects —<br>
-  no cloud, no API keys, your code never leaves your machine.
+  A <strong>local, open-weight AI</strong> clears the dependency clutter from shelved dev projects.<br>
+  No cloud, no API keys, your code never leaves your machine.
 </p>
 
 [![Node](https://img.shields.io/badge/Node-24_LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -18,6 +15,7 @@
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev/)
 [![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![CI](https://img.shields.io/github/actions/workflow/status/CynthiaWahome/dev-hibernate/ci.yml?branch=dev&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/CynthiaWahome/dev-hibernate/actions/workflows/ci.yml)
 [![Ollama](https://img.shields.io/badge/Ollama-gemma3:1b-000000?style=for-the-badge&logo=ollama&logoColor=white)](https://ollama.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-5B47C8?style=for-the-badge)](LICENSE)
 
