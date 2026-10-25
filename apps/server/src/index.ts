@@ -7,6 +7,7 @@ import { healthRouter } from './routes/health.js';
 import { rootsRouter } from './routes/roots.js';
 import { scansRouter } from './routes/scans.js';
 import { candidatesRouter } from './routes/candidates.js';
+import { plansRouter } from './routes/plans.js';
 import { projectsRouter } from './routes/projects.js';
 
 const PORT = Number(process.env.PORT || 4317);
@@ -77,6 +78,7 @@ app.use('/api/roots', rootsRouter);
 app.use('/api/scans', scansRouter);
 app.use('/api/projects', projectsRouter);
 app.use('/api/candidates', candidatesRouter);
+app.use('/api/plans', plansRouter);
 
 // Initialize DB lazily
 getDb();

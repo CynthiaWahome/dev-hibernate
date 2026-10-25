@@ -1,13 +1,12 @@
 import { getDb } from '../db.js';
 import { v4 as uuid } from 'uuid';
-import { readdirSync, lstatSync, statSync, realpathSync, existsSync } from 'node:fs';
-import { resolve, relative, normalize } from 'node:path';
+import { readdirSync, lstatSync } from 'node:fs';
+import { resolve, relative } from 'node:path';
 import { createHash } from 'node:crypto';
 
 const PROTECTED_NAMES = new Set([
   '.env', '.env.local', '.env.development', '.env.production',
   '.npmrc', '.pypirc',
-  '*.pem', '*.key', '*.p12', '*.pfx',
 ]);
 
 const POLICY_VERSION = 1;
@@ -22,7 +21,6 @@ export async function inventoryCandidate(projectId: string, candidatePath: strin
   const blockers: Blocker[] = [];
   const candidateId = uuid();
 
-  // Verify candidate is a real directory, not a symlink
   let st;
   try {
     st = lstatSync(candidatePath);
@@ -44,22 +42,16 @@ export async function inventoryCandidate(projectId: string, candidatePath: strin
     return [candidateId];
   }
 
-  // Inventory tree using metadata only
   let logicalBytes = 0;
   let entryCount = 0;
   const fingerprintParts: string[] = [];
   const maxEntries = 250000;
-
   const stack: string[] = [candidatePath];
-  let timedOut = false;
   const start = Date.now();
+  let timedOut = false;
 
   while (stack.length > 0) {
-    if (Date.now() - start > 120000) {
-      timedOut = true;
-      break;
-    }
-    if (entryCount > maxEntries) {
+    if (Date.now() - start > 120000 || entryCount > maxEntries) {
       timedOut = true;
       break;
     }
@@ -87,9 +79,7 @@ export async function inventoryCandidate(projectId: string, candidatePath: strin
         continue;
       }
 
-      // Check protected names
-      const baseName = entry;
-      if (PROTECTED_NAMES.has(baseName) || baseName.startsWith('.env')) {
+      if (PROTECTED_NAMES.has(entry) || entry.startsWith('.env')) {
         blockers.push({ code: 'protected_entry', message: `Protected entry inside candidate: ${relative(candidatePath, entryPath)}` });
         continue;
       }
@@ -127,10 +117,6 @@ function saveCandidate(db: any, id: string, projectId: string, relativeTarget: s
 export function getCandidates(projectId: string) {
   const db = getDb();
   return db.prepare('SELECT * FROM candidates WHERE project_id = ?').all(projectId);
-}
-
-export function getPolicyVersion(): number {
-  return POLICY_VERSION;
 }
 
 export function isPolicyEligible(candidate: any): boolean {
