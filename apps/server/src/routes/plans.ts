@@ -48,7 +48,7 @@ plansRouter.post('/:projectId', async (req, res) => {
     markers: [],
     activity: 'unknown',
     pinned: Boolean(project.pinned),
-    userShelved: Boolean(project.userShelved),
+    userShelved: Boolean(project.user_shelved),
     scanComplete: scan.completeness === 'complete',
     candidates: candidates.map(c => ({
       id: c.id,
@@ -86,7 +86,7 @@ plansRouter.post('/:projectId', async (req, res) => {
         stream: false,
         options: { temperature: 0 },
       }),
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(120000),
     });
 
     if (!ollamaRes.ok) {
