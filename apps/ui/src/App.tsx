@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import logo from './assets/logo.svg';
 import './index.css';
 
-const API = 'http://127.0.0.1:4317';
+const API = '';
 let TOKEN: string | null = null;
 
 async function api(path: string, opts: RequestInit = {}) {
@@ -62,7 +63,7 @@ export default function App() {
   return (
     <div className="app">
       <div className="header">
-        <img src="/assets/logo.svg" alt="DevHibernate" />
+        <img src={logo} alt="DevHibernate" width="32" height="32" />
         <div>
           <h1>DevHibernate</h1>
           <div className="sub">Hibernate projects. Return when ready.</div>
@@ -119,6 +120,15 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      <footer className="footer">
+        <img src={logo} alt="" className="logo" width="20" height="20" />
+        <span>DevHibernate</span>
+        <span style={{ margin: '0 8px' }}>·</span>
+        <span>2026</span>
+        <span style={{ margin: '0 8px' }}>·</span>
+        <a href="https://wamzii.com" target="_blank" rel="noopener">wamzii.com</a>
+      </footer>
     </div>
   );
 }
