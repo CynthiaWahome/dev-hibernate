@@ -1,10 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+import { randomBytes } from 'node:crypto';
 
-const VALID_TOKENS = new Set<string>([process.env.APP_TOKEN || generateToken()]);
-
-function generateToken(): string {
-  return require('crypto').randomBytes(32).toString('hex');
-}
+const VALID_TOKENS = new Set<string>([process.env.APP_TOKEN || randomBytes(32).toString('hex')]);
 
 export function authMiddleware(req: Request, res: Response, next: NextFunction): void {
   // Skip health and static routes
@@ -13,7 +10,8 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
   }
 
   const token = req.headers['x-app-token'];
-  if (!token || !VALID_TOKENS.has(token)) {
+  const tokenStr = Array.isArray(token) ? token[0] : token;
+  if (!tokenStr || !VALID_TOKENS.has(tokenStr)) {
     res.status(401).json({ error: 'unauthorized' });
     return;
   }
