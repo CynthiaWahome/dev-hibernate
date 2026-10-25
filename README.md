@@ -7,6 +7,11 @@
 
 <p align="center"><strong>Let your projects rest.</strong></p>
 
+<p align="center">
+  A <strong>local, open-weight AI</strong> clears the dependency clutter from shelved dev projects —<br>
+  no cloud, no API keys, your code never leaves your machine.
+</p>
+
 [![Node](https://img.shields.io/badge/Node-24_LTS-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
@@ -33,9 +38,16 @@ Register a folder  →  Scan (filenames + sizes only)  →  Local AI drafts a pl
      →  You review  →  Approved cleanup runs  →  Resume guide for later
 ```
 
-## Your code never leaves your laptop
+## The AI runs on *your* machine — that's the whole point
 
-Metadata only. The scanner never opens your files. The local model never sees your source, your secrets, or your `.env` — it gets IDs and sizes, nothing more. No cloud, no telemetry, no "we value your privacy" fine print that means the opposite. We [wrote down exactly how](docs/TECHNICAL.md#privacy-contract).
+Cleaning up your projects means letting something look at them, and your project list alone can leak client names, internal work, and the shape of your entire setup. So DevHibernate doesn't phone home. The hibernation assessment runs on an **open-weight model — [Gemma 3](https://ollama.com/library/gemma3) through [Ollama](https://ollama.com/)** — entirely on your laptop.
+
+- 🏠 **No cloud, no API keys, no per-token bill.** It also works on a plane.
+- 🔒 **Your code stays put.** The scanner reads filenames and sizes, never contents. The model gets IDs and sizes — never your source, your secrets, or your `.env`.
+- 🔄 **Your model, your call.** Don't like Gemma? Point it at a different local model and run it against the exact same validation.
+- 🔍 **Nothing to trust blindly.** It's open — inspect it, fork it, run it offline forever.
+
+The privacy promise isn't a reassuring banner; there's simply no server to send anything to. [Here's exactly how it holds](docs/TECHNICAL.md#privacy-contract).
 
 ## Quick start
 
