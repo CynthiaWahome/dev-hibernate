@@ -1,0 +1,5 @@
+# Language statistics: this is a TypeScript project. Keep GitHub's language
+# breakdown focused on the application code, not the stylesheet or generated files.
+*.css linguist-detectable=false
+*.svg linguist-detectable=false
+package-lock.json linguist-generated=true
