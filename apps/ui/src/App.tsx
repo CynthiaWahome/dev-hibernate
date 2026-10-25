@@ -149,33 +149,31 @@ export default function App() {
             <div className="sub">Hibernate projects. Return when ready.</div>
           </div>
         </div>
-        <form className="root-form header-form" onSubmit={registerRoot}>
-          <input
-            aria-label="Folder path to register"
-            className="input mono"
-            placeholder="/Users/you/dev/my-app"
-            value={rootPath}
-            onChange={e => setRootPath(e.target.value)}
-            autoComplete="off"
-            spellCheck={false}
-          />
-          <button className="btn btn-primary" type="submit" disabled={registering || !rootPath.trim()}>
-            {registering ? 'Scanning…' : 'Register & scan'}
-          </button>
-        </form>
+        <div className="header-right">
+          <form className="root-form header-form" onSubmit={registerRoot}>
+            <input
+              aria-label="Folder path to register"
+              className="input mono"
+              placeholder="/Users/you/dev/my-app"
+              value={rootPath}
+              onChange={e => setRootPath(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <button className="btn btn-primary" type="submit" disabled={registering || !rootPath.trim()}>
+              {registering ? 'Scanning…' : 'Register & scan'}
+            </button>
+          </form>
+          <p className="privacy-note">
+            <span aria-hidden="true">🔒</span> Your code stays private — only this folder is scanned;
+            filenames and sizes only, never your contents or <code>.env</code>.
+          </p>
+        </div>
       </header>
-
-      <div className="privacy-bar">
-        <span aria-hidden="true">🔒</span>
-        <span>
-          <strong>Your code stays private.</strong> Only this folder is scanned — filenames and sizes
-          only, never your file contents or <code>.env</code>.
-        </span>
-      </div>
       {error && <div className="error-bar">{error}</div>}
 
       <main className="main">
-        <div className="card">
+        <div className="card projects-panel">
           <h2>Projects</h2>
           {projects.length > 0 && (
             <p className="section-hint">
