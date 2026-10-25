@@ -9,6 +9,7 @@ import { scansRouter } from './routes/scans.js';
 import { candidatesRouter } from './routes/candidates.js';
 import { plansRouter } from './routes/plans.js';
 import { projectsRouter } from './routes/projects.js';
+import { docsRouter } from './routes/docs.js';
 
 const PORT = Number(process.env.PORT || 4317);
 const TOKEN = randomBytes(32).toString('hex');
