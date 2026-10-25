@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { getDb } from '../db.js';
 import { inventoryCandidate, getCandidates } from '../scanner/inventory.js';
-import { existsSync, realpathSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 export const candidatesRouter = Router();
@@ -15,8 +15,6 @@ candidatesRouter.post('/:projectId', async (req, res) => {
     return;
   }
 
-  const candidatePath = resolve(project.root_id ? '.' : '.', 'node_modules');
-  // Resolve actual path from root
   const root = db.prepare('SELECT * FROM roots WHERE id = ?').get(project.root_id) as any;
   if (!root) {
     res.status(404).json({ error: 'root_not_found' });
