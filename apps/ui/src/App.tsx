@@ -1,122 +1,124 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import './index.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+const API = 'http://127.0.0.1:4317';
+let TOKEN: string | null = null;
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+async function api(path: string, opts: RequestInit = {}) {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (TOKEN) headers['X-App-Token'] = TOKEN;
+  const res = await fetch(`${API}/api${path}`, { ...opts, headers });
+  if (res.status === 401) {
+    TOKEN = null;
+    window.location.reload();
+    return null;
+  }
+  return res.json();
 }
 
-export default App
+interface Project {
+  id: string;
+  ecosystem: string;
+  status: string;
+  pinned: number;
+  user_shelved: number;
+}
+
+export default function App() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`${API}/api/bootstrap`).then(r => r.json()).then(t => {
+      setToken(t.token);
+      TOKEN = t.token;
+      loadProjects();
+    });
+  }, []);
+
+  async function loadProjects() {
+    const data = await api('/projects');
+    if (data) setProjects(data);
+  }
+
+  async function toggleShelve(p: Project) {
+    await api(`/projects/${p.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ userShelved: !p.user_shelved }),
+    });
+    loadProjects();
+  }
+
+  async function togglePin(p: Project) {
+    await api(`/projects/${p.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ pinned: !p.pinned }),
+    });
+    loadProjects();
+  }
+
+  if (!token) return <div className="app"><div className="main"><div className="empty">Loading...</div></div></div>;
+
+  return (
+    <div className="app">
+      <div className="header">
+        <img src="/assets/logo.svg" alt="DevHibernate" />
+        <div>
+          <h1>DevHibernate</h1>
+          <div className="sub">Hibernate projects. Return when ready.</div>
+        </div>
+      </div>
+
+      <div className="main">
+        <div className="card">
+          <h2>Projects</h2>
+          {projects.length === 0 ? (
+            <div className="empty">No projects discovered yet. Register a root to begin.</div>
+          ) : (
+            <div className="grid">
+              {projects.map(p => (
+                <div key={p.id} className="project-card">
+                  <div className="info">
+                    <h3>{p.ecosystem} project</h3>
+                    <div className="meta">
+                      <span className={`badge badge-${p.status}`}>{p.status}</span>
+                      {p.pinned && <span className="badge badge-active">pinned</span>}
+                      {p.user_shelved && <span className="badge badge-shelved">shelved</span>}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      className={`btn ${p.user_shelved ? 'btn-ghost' : 'btn-primary'}`}
+                      onClick={() => toggleShelve(p)}
+                    >
+                      {p.user_shelved ? 'Unshelve' : 'Shelve'}
+                    </button>
+                    <button
+                      className={`btn ${p.pinned ? 'btn-danger' : 'btn-ghost'}`}
+                      onClick={() => togglePin(p)}
+                    >
+                      {p.pinned ? 'Unpin' : 'Pin'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <h2>How It Works</h2>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--text-muted)' }}>
+            <span>Root →</span>
+            <span>Project →</span>
+            <span>Scan →</span>
+            <span>Candidate →</span>
+            <span>Plan →</span>
+            <span>Operation →</span>
+            <span>Resume Record</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
