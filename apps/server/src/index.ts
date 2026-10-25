@@ -8,7 +8,7 @@ import { rootsRouter } from './routes/roots.js';
 import { scansRouter } from './routes/scans.js';
 import { projectsRouter } from './routes/projects.js';
 
-const PORT = process.env.PORT || 4317;
+const PORT = Number(process.env.PORT || 4317);
 const TOKEN = randomBytes(32).toString('hex');
 
 const app = express();
