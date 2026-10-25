@@ -21,11 +21,58 @@ interface Project {
   user_shelved: number;
   root_id: string;
   relative_location: string;
+  root_path: string;
+  candidate_bytes: number;
+}
+
+function formatBytes(n: number): string {
+  if (!n) return '';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let i = 0;
+  let v = n;
+  while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+  return `${v.toFixed(v < 10 && i > 0 ? 1 : 0)} ${units[i]}`;
+}
+
+function projectPath(p: Project): string {
+  if (!p.root_path) return p.relative_location;
+  return p.relative_location === '.' ? p.root_path : `${p.root_path}/${p.relative_location}`;
+}
+
+// 3 columns × 3 rows — beyond this the grid paginates inside its own container
+const PAGE_SIZE = 9;
+
+const ERROR_TEXT: Record<string, string> = {
+  invalid_path: 'That folder wasn’t found. Use a full path like /Users/you/dev/my-app (a leading ~ is fine).',
+  path_blocked: 'That’s a protected system folder. Pick a folder inside your home directory instead.',
+  path_required: 'Enter a folder path.',
+  origin_not_allowed: 'The app blocked this request’s origin. Reload the page and try again.',
+};
+
+function Footer() {
+  return (
+    <footer className="footer">
+      <img src={logo} alt="" className="logo" width="18" height="18" />
+      <span>DevHibernate</span>
+      <span style={{ margin: '0 8px' }}>·</span>
+      <span>2026</span>
+      <span style={{ margin: '0 8px' }}>·</span>
+      <span>All rights reserved</span>
+      <span style={{ margin: '0 8px' }}>·</span>
+      <a href="/docs" target="_blank" rel="noopener">API docs</a>
+      <span style={{ margin: '0 8px' }}>·</span>
+      <a href="https://wamzii.com" target="_blank" rel="noopener">wamzii.com</a>
+    </footer>
+  );
 }
 
 export default function App() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [token, setToken] = useState<string | null>(null);
+  const [rootPath, setRootPath] = useState('');
+  const [registering, setRegistering] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
     fetch(`${API}/api/bootstrap`).then(r => r.json()).then(t => {
@@ -38,6 +85,29 @@ export default function App() {
   async function loadProjects() {
     const data = await api('/projects');
     if (data) setProjects(data);
+  }
+
+  async function registerRoot(e: React.FormEvent) {
+    e.preventDefault();
+    const path = rootPath.trim();
+    if (!path) { setError('Enter a folder path to register.'); return; }
+    setRegistering(true);
+    setError(null);
+    try {
+      const root = await api('/roots', { method: 'POST', body: JSON.stringify({ path }) });
+      if (!root) return;
+      if (root.error) {
+        setError(ERROR_TEXT[root.error] ?? 'Could not register that folder.');
+        return;
+      }
+      await api('/scans', { method: 'POST', body: JSON.stringify({ rootId: root.id }) });
+      setRootPath('');
+      // discovery runs asynchronously; re-fetch after it has had a moment
+      setTimeout(loadProjects, 800);
+      setTimeout(loadProjects, 2200);
+    } finally {
+      setRegistering(false);
+    }
   }
 
   async function toggleShelve(p: Project) {
@@ -56,43 +126,83 @@ export default function App() {
     loadProjects();
   }
 
-  if (!token) return (
-    <div className="app">
-      <div className="main"><div className="empty">Loading...</div></div>
-      <footer className="footer">
-        <img src={logo} alt="" className="logo" width="20" height="20" />
-        <span>DevHibernate</span>
-        <span style={{ margin: '0 8px' }}>·</span>
-        <span>2026</span>
-        <span style={{ margin: '0 8px' }}>·</span>
-        <span>All rights reserved</span>
-        <span style={{ margin: '0 8px' }}>·</span>
-        <a href="https://wamzii.com" target="_blank" rel="noopener">wamzii.com</a>
-      </footer>
-    </div>
-  );
+  if (!token) {
+    return (
+      <div className="app">
+        <div className="main"><div className="empty">Loading…</div></div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const totalPages = Math.max(1, Math.ceil(projects.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const pageItems = projects.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
   return (
     <div className="app">
-      <div className="header">
-        <img src={logo} alt="DevHibernate" width="32" height="32" />
-        <div>
-          <h1>DevHibernate</h1>
-          <div className="sub">Hibernate projects. Return when ready.</div>
+      <header className="header">
+        <div className="brand">
+          <img src={logo} alt="DevHibernate" width="32" height="32" />
+          <div>
+            <h1>DevHibernate</h1>
+            <div className="sub">Hibernate projects. Return when ready.</div>
+          </div>
         </div>
-      </div>
+        <div className="header-right">
+          <form className="root-form header-form" onSubmit={registerRoot}>
+            <input
+              aria-label="Folder path to register"
+              className="input mono"
+              placeholder="/Users/you/dev/my-app"
+              value={rootPath}
+              onChange={e => setRootPath(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+            />
+            <button className="btn btn-primary" type="submit" disabled={registering}>
+              {registering ? 'Scanning…' : 'Register & scan'}
+            </button>
+          </form>
+          <p className="privacy-note">
+            <span aria-hidden="true">🔒</span> Your code stays private — only this folder is scanned;
+            filenames and sizes only, never your contents or <code>.env</code>.
+          </p>
+        </div>
+      </header>
+      {error && <div className="error-bar">{error}</div>}
 
-      <div className="main">
-        <div className="card">
+      <main className="main">
+        <div className="card projects-panel">
           <h2>Projects</h2>
+          {projects.length > 0 && (
+            <p className="section-hint">
+              <strong>Shelve</strong> marks a project ready for hibernation (its <code>node_modules</code> can be
+              removed) · <strong>Pin</strong> protects it — never removed, even if shelved.
+            </p>
+          )}
           {projects.length === 0 ? (
-            <div className="empty">No projects discovered yet. Register a root to begin.</div>
+            <div className="empty">
+              <p style={{ marginBottom: 'var(--s6)' }}>
+                No projects yet. Register a folder above and DevHibernate will discover the
+                projects inside it.
+              </p>
+              <div className="chain">
+                <span>Root</span>
+                <span>Project</span>
+                <span>Scan</span>
+                <span>Candidate</span>
+                <span>Plan</span>
+                <span>Operation</span>
+                <span>Resume&nbsp;Record</span>
+              </div>
+            </div>
           ) : (
             <div className="grid">
-              {projects.map(p => (
+              {pageItems.map(p => (
                 <div key={p.id} className="project-card">
                   <div className="info">
-                    <h3>
+                    <h3 title={projectPath(p)}>
                       <span aria-hidden="true" style={{ marginRight: '8px' }}>📦</span>
                       {p.relative_location === '.' ? 'Project root' : p.relative_location}
                     </h3>
@@ -100,21 +210,24 @@ export default function App() {
                       <span className={`badge badge-${p.status}`}>{p.status}</span>
                       {p.pinned ? <span className="badge badge-active">pinned</span> : null}
                       {p.user_shelved ? <span className="badge badge-shelved">shelved</span> : null}
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                        {p.ecosystem.charAt(0).toUpperCase() + p.ecosystem.slice(1)}
-                      </span>
+                      <span>{p.ecosystem.charAt(0).toUpperCase() + p.ecosystem.slice(1)}</span>
+                      {p.candidate_bytes > 0 && (
+                        <span className="tnum">· {formatBytes(p.candidate_bytes)} recoverable</span>
+                      )}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
+                  <div className="card-actions">
                     <button
                       className={`btn ${p.user_shelved ? 'btn-ghost' : 'btn-primary'}`}
                       onClick={() => toggleShelve(p)}
+                      title="Mark this project ready for hibernation — its node_modules becomes eligible for removal"
                     >
                       {p.user_shelved ? 'Unshelve' : 'Shelve'}
                     </button>
                     <button
                       className={`btn ${p.pinned ? 'btn-danger' : 'btn-ghost'}`}
                       onClick={() => togglePin(p)}
+                      title="Protect this project — it is never removed, even if shelved"
                     >
                       {p.pinned ? 'Unpin' : 'Pin'}
                     </button>
@@ -123,50 +236,29 @@ export default function App() {
               ))}
             </div>
           )}
+          {projects.length > PAGE_SIZE && (
+            <div className="pagination">
+              <button
+                className="btn btn-ghost"
+                onClick={() => setPage(p => Math.max(0, p - 1))}
+                disabled={safePage === 0}
+              >
+                ← Prev
+              </button>
+              <span>Page {safePage + 1} of {totalPages}</span>
+              <button
+                className="btn btn-ghost"
+                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                disabled={safePage >= totalPages - 1}
+              >
+                Next →
+              </button>
+            </div>
+          )}
         </div>
+      </main>
 
-        <div className="card">
-          <h2>Guide</h2>
-          <div style={{ fontSize: '14px', lineHeight: '1.8', color: 'var(--text)' }}>
-            <p style={{ marginBottom: '12px' }}>
-              <strong>Shelve</strong> — Mark a project as ready for hibernation.
-              Shelved projects have their <code>node_modules</code> eligible for removal.
-            </p>
-            <p style={{ marginBottom: '12px' }}>
-              <strong>Pin</strong> — Protect a project from hibernation.
-              Pinned projects are never touched, even if shelved.
-            </p>
-            <p style={{ color: 'var(--text-muted)' }}>
-              A project must be <strong>shelved</strong> and <strong>not pinned</strong> before it
-              can be hibernated. Use the Review screen to confirm before deletion.
-            </p>
-          </div>
-        </div>
-
-        <div className="card">
-          <h2>How It Works</h2>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '13px', color: 'var(--text-muted)' }}>
-            <span>Root →</span>
-            <span>Project →</span>
-            <span>Scan →</span>
-            <span>Candidate →</span>
-            <span>Plan →</span>
-            <span>Operation →</span>
-            <span>Resume Record</span>
-          </div>
-        </div>
-      </div>
-
-      <footer className="footer">
-        <img src={logo} alt="" className="logo" width="20" height="20" />
-        <span>DevHibernate</span>
-        <span style={{ margin: '0 8px' }}>·</span>
-        <span>2026</span>
-        <span style={{ margin: '0 8px' }}>·</span>
-        <span>All rights reserved</span>
-        <span style={{ margin: '0 8px' }}>·</span>
-        <a href="https://wamzii.com" target="_blank" rel="noopener">wamzii.com</a>
-      </footer>
+      <Footer />
     </div>
   );
 }
