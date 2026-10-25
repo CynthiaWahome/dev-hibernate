@@ -34,7 +34,13 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGIN || 'http://127.0.0.1:5173',
+  origin: (origin, cb) => {
+    if (!origin || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PATCH'],
   allowedHeaders: ['Content-Type', 'X-App-Token'],
 }));
@@ -80,6 +86,9 @@ app.use('/api/scans', scansRouter);
 app.use('/api/projects', projectsRouter);
 app.use('/api/candidates', candidatesRouter);
 app.use('/api/plans', plansRouter);
+
+// Docs (public)
+app.use(docsRouter);
 
 // Initialize DB lazily
 getDb();
