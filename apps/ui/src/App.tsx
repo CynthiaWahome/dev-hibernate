@@ -9,11 +9,7 @@ async function api(path: string, opts: RequestInit = {}) {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (TOKEN) headers['X-App-Token'] = TOKEN;
   const res = await fetch(`${API}/api${path}`, { ...opts, headers });
-  if (res.status === 401) {
-    TOKEN = null;
-    window.location.reload();
-    return null;
-  }
+  if (res.status === 401) { TOKEN = null; window.location.reload(); return null; }
   return res.json();
 }
 
@@ -23,6 +19,8 @@ interface Project {
   status: string;
   pinned: number;
   user_shelved: number;
+  root_id: string;
+  relative_location: string;
 }
 
 export default function App() {
@@ -58,7 +56,21 @@ export default function App() {
     loadProjects();
   }
 
-  if (!token) return <div className="app"><div className="main"><div className="empty">Loading...</div></div></div>;
+  if (!token) return (
+    <div className="app">
+      <div className="main"><div className="empty">Loading...</div></div>
+      <footer className="footer">
+        <img src={logo} alt="" className="logo" width="20" height="20" />
+        <span>DevHibernate</span>
+        <span style={{ margin: '0 8px' }}>·</span>
+        <span>2026</span>
+        <span style={{ margin: '0 8px' }}>·</span>
+        <span>All rights reserved</span>
+        <span style={{ margin: '0 8px' }}>·</span>
+        <a href="https://wamzii.com" target="_blank" rel="noopener">wamzii.com</a>
+      </footer>
+    </div>
+  );
 
   return (
     <div className="app">
@@ -80,14 +92,20 @@ export default function App() {
               {projects.map(p => (
                 <div key={p.id} className="project-card">
                   <div className="info">
-                    <h3>{p.ecosystem} project</h3>
-                    <div className="meta">
+                    <h3>
+                      <span aria-hidden="true" style={{ marginRight: '8px' }}>📦</span>
+                      {p.relative_location === '.' ? 'Project root' : p.relative_location}
+                    </h3>
+                    <div className="meta" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                       <span className={`badge badge-${p.status}`}>{p.status}</span>
-                      {p.pinned && <span className="badge badge-active">pinned</span>}
-                      {p.user_shelved && <span className="badge badge-shelved">shelved</span>}
+                      {p.pinned ? <span className="badge badge-active">pinned</span> : null}
+                      {p.user_shelved ? <span className="badge badge-shelved">shelved</span> : null}
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                        {p.ecosystem.charAt(0).toUpperCase() + p.ecosystem.slice(1)}
+                      </span>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexDirection: 'column' }}>
                     <button
                       className={`btn ${p.user_shelved ? 'btn-ghost' : 'btn-primary'}`}
                       onClick={() => toggleShelve(p)}
@@ -105,6 +123,24 @@ export default function App() {
               ))}
             </div>
           )}
+        </div>
+
+        <div className="card">
+          <h2>Guide</h2>
+          <div style={{ fontSize: '14px', lineHeight: '1.8', color: 'var(--text)' }}>
+            <p style={{ marginBottom: '12px' }}>
+              <strong>Shelve</strong> — Mark a project as ready for hibernation.
+              Shelved projects have their <code>node_modules</code> eligible for removal.
+            </p>
+            <p style={{ marginBottom: '12px' }}>
+              <strong>Pin</strong> — Protect a project from hibernation.
+              Pinned projects are never touched, even if shelved.
+            </p>
+            <p style={{ color: 'var(--text-muted)' }}>
+              A project must be <strong>shelved</strong> and <strong>not pinned</strong> before it
+              can be hibernated. Use the Review screen to confirm before deletion.
+            </p>
+          </div>
         </div>
 
         <div className="card">
@@ -126,6 +162,8 @@ export default function App() {
         <span>DevHibernate</span>
         <span style={{ margin: '0 8px' }}>·</span>
         <span>2026</span>
+        <span style={{ margin: '0 8px' }}>·</span>
+        <span>All rights reserved</span>
         <span style={{ margin: '0 8px' }}>·</span>
         <a href="https://wamzii.com" target="_blank" rel="noopener">wamzii.com</a>
       </footer>
